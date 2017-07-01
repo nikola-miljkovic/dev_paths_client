@@ -13,13 +13,13 @@ class CmdParserTests(unittest.TestCase):
         applicationContext = cmd_parser.parse(['list', 'ruby'])
 
         self.assertIsInstance(applicationContext, ListApplicationContext)
-        self.assertEqual(applicationContext.SelectedLanguage, "ruby")
+        self.assertEqual(applicationContext.selected_language, "ruby")
 
     def test_list_argument_n(self):
         applicationContext = cmd_parser.parse(['list','-n', '10'])
 
         self.assertIsInstance(applicationContext, ListApplicationContext)
-        self.assertEqual(applicationContext.EntryNumber, 10)
+        self.assertEqual(applicationContext.entry_number, 10)
 
     def test_desc(self):
         applicationContext = cmd_parser.parse(['desc'])
@@ -30,7 +30,7 @@ class CmdParserTests(unittest.TestCase):
         applicationContext = cmd_parser.parse(['desc', '-n', '10'])
 
         self.assertIsInstance(applicationContext, DescApplicationContext)
-        self.assertEqual(applicationContext.EntryNumber, 10)
+        self.assertEqual(applicationContext.entry_number, 10)
 
     def test_no_cmd(self):
         applicationContext = cmd_parser.parse([])

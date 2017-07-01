@@ -2,7 +2,7 @@ import argparse
 from github_browser.application_context import ListApplicationContext, DescApplicationContext
 
 def add_narg(parser, _nargs = 1, _default = 20):
-    parser.add_argument('-n', nargs=_nargs, default=_default)
+    parser.add_argument('-n', nargs=_nargs, default=_default, type=int)
 
 def parse(args):
     parser = argparse.ArgumentParser(description='TODO')
@@ -18,6 +18,11 @@ def parse(args):
     add_narg(parser_desc)
 
     parser = parser.parse_args(args)
+
+    # parse_args makes list instead of single integer value for n,
+    # so we need to check if that is case and set proper value
+    if hasattr(parser, 'n') and isinstance(parser.n, list):
+        parser.n = parser.n[0]
 
     if not hasattr(parser, 'which'):
         return None
