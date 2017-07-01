@@ -21,12 +21,23 @@ class CmdParserTests(unittest.TestCase):
         self.assertIsInstance(applicationContext, ListApplicationContext)
         self.assertEqual(applicationContext.entry_number, 10)
 
+    def test_list_sort_correct(self):
+        applicationContext = cmd_parser.parse(['list', '-n', '10', '-s', 'stars'])
+
+        self.assertIsInstance(applicationContext, ListApplicationContext)
+        self.assertEqual(applicationContext.sort_type, 'stars')
+
+    def test_list_sort_wrong(self):
+        applicationContext = cmd_parser.parse(['list', '-n', '10', '-s', 'random'])
+
+        self.assertIsNone(applicationContext)
+
     def test_desc(self):
         applicationContext = cmd_parser.parse(['desc'])
 
         self.assertIsInstance(applicationContext, DescApplicationContext)
 
-    def test_descargument_n(self):
+    def test_desc_argument_n(self):
         applicationContext = cmd_parser.parse(['desc', '-n', '10'])
 
         self.assertIsInstance(applicationContext, DescApplicationContext)
@@ -36,6 +47,8 @@ class CmdParserTests(unittest.TestCase):
         applicationContext = cmd_parser.parse([])
 
         self.assertIsNone(applicationContext)
+
+
 
 if __name__ == '__main__':
     unittest.main()
