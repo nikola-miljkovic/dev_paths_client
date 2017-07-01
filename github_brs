@@ -1,0 +1,7 @@
+#!/usr/bin/python3
+
+import sys
+import github_browser
+
+if __name__ == '__main__':
+    github_browser.main(sys.argv[1:])
