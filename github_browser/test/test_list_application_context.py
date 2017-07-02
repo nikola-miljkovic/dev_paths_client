@@ -54,7 +54,8 @@ class ListApplicationContextTest(unittest.TestCase):
         list_application_context = ListApplicationContext(1, lang='assembly', sort='updated')
         latest_repository = list_application_context.get_latest_public_repository()
 
-        self.assertEqual(latest_repository['id'], '6178645124')
+        self.assertEqual(latest_repository['id'], 96029576)
+
 
 if __name__ == '__main__':
     unittest.main()

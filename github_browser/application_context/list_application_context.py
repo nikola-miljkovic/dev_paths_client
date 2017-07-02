@@ -22,7 +22,6 @@ class ListApplicationContext(ApplicationContext):
         try:
             if event['type'] == 'CreateEvent' and event['payload']['ref_type'] == 'repository':
                 return True
-
             return False
         except KeyError:
             return False
@@ -44,7 +43,7 @@ class ListApplicationContext(ApplicationContext):
                     continue
                 except KeyError:
                     return False
-            return entry
+            return entry['repo']
 
     def get_query_str(self) -> str:
         query_build_str = []
