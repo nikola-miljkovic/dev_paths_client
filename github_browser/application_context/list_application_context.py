@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 
+from github_browser.time_adapter import get_time_range, transform_date, sort_by_creation_date, load_api_date
 from . import ApplicationContext
 
 
@@ -14,28 +15,11 @@ class ListApplicationContext(ApplicationContext):
         self.selected_language = lang
         self.sort_type = sort
         self.extended_output = extended_output
-        self._context_data = None
-        self._context_data_sanitized = None
+        self._repository_list = None
+        self._output_text = None
 
-    @staticmethod
-    def get_time_range(minutes_diff) -> (str, str):
-        time_higher = datetime.now(timezone.utc)
-        time_lower = time_higher - timedelta(minutes=minutes_diff)
-        time_format = "%Y-%m-%dT%H:%M:%SZ"
-        return time_lower.strftime(time_format), time_higher.strftime(time_format)
-
-    @staticmethod
-    def sort_by_creation_date(item):
-        return item['created_at']
-
-    @staticmethod
-    def transform_date(date):
-        time_format_old = "%Y-%m-%dT%H:%M:%SZ"
-        time_format_new = "%d.%m.%Y--%H:%M:%S"
-        return datetime.strptime(date, time_format_old).strftime(time_format_new)
-
-    def get_query_str(self, minutes_diff=60) -> str:
-        time_lower, time_higher = ListApplicationContext.get_time_range(minutes_diff)
+    def get_query_str(self, time=get_time_range(30)) -> str:
+        time_lower, time_higher = time
         language_query = "" if self.selected_language is None else ("+language:" + self.selected_language)
 
         query_build_str = ['q=created:\"%s+..+%s\"%s' % (time_lower, time_higher, language_query)]
@@ -48,69 +32,74 @@ class ListApplicationContext(ApplicationContext):
         return '?' + '&'.join(query_build_str)
 
     def get_sanitized_data(self) -> str:
-        if self._context_data_sanitized is not None:
-            return self._context_data_sanitized
-        elif self._context_data is None:
+        if self._output_text is not None:
+            return self._output_text
+        elif self._repository_list is None:
             return ""
         else:
-            response = list()
-            items = self._context_data
-            response.append("Total entries found: %s" % len(items))
-            response.append("----------------------------------------")
+            # previously geathered repository
+            repositories = self._repository_list
 
+            output_text_buffer = list()
+            output_text_buffer.append("Total entries found: %s" % len(repositories))
+            output_text_buffer.append("----------------------------------------")
             if self.extended_output:
-                response.append('\n'.join("#%s\t%s\t%s" %
-                                          (idx, i['full_name'], ListApplicationContext.transform_date(i['created_at']))
-                                          for idx, i in enumerate(items)))
+                output_text_buffer.append('\n'.join("#%s\t%s\t%s" %
+                                          (idx, i['full_name'], transform_date(i['created_at']))
+                                          for idx, i in enumerate(repositories)))
             else:
-                response.append('\n'.join(i['full_name'] for i in items))
+                output_text_buffer.append('\n'.join(i['full_name'] for i in repositories))
 
-            self._context_data_sanitized = '\n'.join(response)
-            return self._context_data_sanitized
+            self._output_text = '\n'.join(output_text_buffer)
+            return self._output_text
+
+    def create_query(self, time_range):
+        return ''.join([ApplicationContext.ROOT_ENDPOINT, self.PATH_SEARCH, self.get_query_str(time_range)])
 
     def run(self):
         time_diff = 30
-        request_url = ''.join([ApplicationContext.ROOT_ENDPOINT, self.PATH_SEARCH, self.get_query_str(time_diff)])
+        time_range = get_time_range(time_diff)
+        request_url = self.create_query(time_range)
 
+        # Collection of items gathered throughout api calls and processed for output
         items = []
         if self.sort_type == 'default':
             while True:
+                # Gather items and sort them by creation date
+                # GitHub api doesn't support sort by creation date
                 request = requests.get(request_url)
                 content = request.json()
                 items.extend(content['items'])
-                total_count = content['total_count']
+                total_repo_count = content['total_count']
 
-                if total_count > self.entry_number:
-                    # traverse the list until we have all entries to sort
+                if total_repo_count > self.entry_number:
+                    # each request can only contain up to 100 entries
+                    # gather them with multiple requests by traversing the list like structure
                     try:
                         request_url = request.links['next']['url']
                         continue
                     except KeyError:
                         break
-                elif total_count == self.entry_number:
+                elif total_repo_count == self.entry_number:
                     break
                 else:
-                    # create new query with increased time diff so we can get larger total_count
+                    # Our search query contains less item then we need,
+                    # Increase range for filtering and re-try
                     try:
-                        if time_diff > 180:
-                            # if we didn't find yet increase time diff for 1 year
-                            time_diff += 60 * 24 * 365
-
-                        time_diff += 60
-                        request_url = ''.join(
-                            [ApplicationContext.ROOT_ENDPOINT, self.PATH_SEARCH, self.get_query_str(time_diff)])
-                        items = []
+                        # Multiply search range by 2 starting from creation date of last entry in range
+                        time_diff *= 2
+                        last_date = min(items, key=sort_by_creation_date)['created_at']
+                        time_range = get_time_range(time_diff, time_higher=load_api_date(last_date))
+                        request_url = self.create_query(time_range)
                         continue
                     except KeyError:
                         break
 
-            items = sorted(items, key=ListApplicationContext.sort_by_creation_date, reverse=True)
+            items = sorted(items, key=sort_by_creation_date, reverse=True)
 
         else:
             request = requests.get(request_url)
             content = request.json()
             items.extend(content['items'])
 
-        # a = request.links['next']['url']
-
-        self._context_data = items[0:self.entry_number]
+        self._repository_list = items[0:self.entry_number]

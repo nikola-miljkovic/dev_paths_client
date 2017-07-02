@@ -3,6 +3,7 @@ from unittest import mock
 
 from github_browser.application_context import ListApplicationContext
 from github_browser.test import mocked_requests_get, mocked_get_query_str
+from github_browser.time_adapter import sort_by_creation_date, get_time_range
 
 
 class ListApplicationContextTest(unittest.TestCase):
@@ -49,11 +50,11 @@ class ListApplicationContextTest(unittest.TestCase):
     # sort_by_creation_date()
     #
     def test_sort_by_creation_date(self):
-        time_low, time_high = ListApplicationContext.get_time_range(60)
-        time_lowest, _ = ListApplicationContext.get_time_range(120)
+        time_low, time_high = get_time_range(60)
+        time_lowest, _ = get_time_range(120)
 
         entries = [{'created_at': time_low}, {'created_at': time_high}, {'created_at': time_lowest}]
-        new_entries = sorted(entries, key=ListApplicationContext.sort_by_creation_date, reverse=True)
+        new_entries = sorted(entries, key=sort_by_creation_date, reverse=True)
         self.assertListEqual(new_entries,
                              [{'created_at': time_high}, {'created_at': time_low}, {'created_at': time_lowest}])
 
