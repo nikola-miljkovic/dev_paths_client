@@ -3,7 +3,9 @@
 Python      3.5
 requests    2.10.0
 
+```sh
 $ pip install -r requirements.txt
+```
 
 ### Usage
 
@@ -14,6 +16,7 @@ $ ./ghtool -h
 ```
 
 Prints:
+```
 usage: ghtool [-h] {list,desc,latest} ...
 
 Provides data and information from GitHub
@@ -26,23 +29,24 @@ positional arguments:
 
 optional arguments:
   -h, --help          show this help message and exit
+```
 
 ### Examples
 
 
 ```sh
 $ ./ghtool list
-
+```  
 
 ```sh
 $ ./ghtool list ruby
-```
+```  
 
 ```sh
 $ ./ghtool list ruby -n 10
-```
+```  
 
--t provides extended output e.g
+-t provides extended output e.g  
 \#15 creator/repo_name 02.07.2017--21:45:30
 
 ```sh
