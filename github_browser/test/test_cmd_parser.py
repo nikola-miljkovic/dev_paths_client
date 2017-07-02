@@ -1,7 +1,8 @@
 from github_browser import cmd_parser
-from github_browser.application_context import ListApplicationContext, DescApplicationContext
+from github_browser.application_context import ListApplicationContext, LatestApplicationContext
 
 import unittest
+
 
 class CmdParserTests(unittest.TestCase):
     def test_list_default(self):
@@ -41,6 +42,11 @@ class CmdParserTests(unittest.TestCase):
         application_context = cmd_parser.parse(['desc', 'mojombo/grit', 'mojombo/god'])
 
         self.assertCountEqual(application_context._search_ids, ['mojombo/grit', 'mojombo/god'])
+
+    def test_latest_without_arguments(self):
+        application_context = cmd_parser.parse(['latest'])
+
+        self.assertIsInstance(application_context, LatestApplicationContext)
 
     def test_no_cmd(self):
         application_context = cmd_parser.parse([])

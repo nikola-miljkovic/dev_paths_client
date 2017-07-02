@@ -2,11 +2,13 @@ from . import cmd_parser
 
 
 def main(args):
-    applicationContext = cmd_parser.parse(args)
+    application_context = cmd_parser.parse(args)
 
-    if applicationContext is None:
-        print("No cmd specified")
-    else:
-        applicationContext.run()
-        for output in applicationContext.get_sanitized_data():
-            print(output)
+    if application_context is not None:
+        application_context.run()
+
+        if hasattr(application_context, 'get_sanitized_data'):
+            print(application_context.get_sanitized_data())
+        elif hasattr(application_context, 'get_data_stream'):
+            for output in application_context.get_data_stream():
+                print(output)

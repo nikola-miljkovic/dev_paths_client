@@ -7,8 +7,8 @@ from . import ApplicationContext
 
 
 class ListApplicationContext(ApplicationContext):
-    PATH = '/search/repositories'
-    EVENTS_PATH = '/events'
+    PATH_SEARCH = '/search/repositories'
+    PATH_EVENTS = '/events'
 
     def __init__(self, n: int, lang: str=None, sort: str='updated'):
         self.entry_number = n
@@ -18,38 +18,19 @@ class ListApplicationContext(ApplicationContext):
         self._context_data_sanatized = None
 
     @staticmethod
-    def is_repository_creation_event(event: Dict) -> bool:
-        try:
-            if event['type'] == 'CreateEvent' and event['payload']['ref_type'] == 'repository':
-                return True
-            return False
-        except KeyError:
-            return False
-
-    def get_latest_public_repository(self) -> Dict:
-        """
-            Searches throughout events for latest public repository created on github
-            Where CreateEvent and ref_type is repository
-        """
-        request_url = ''.join([ApplicationContext.ROOT_ENDPOINT, self.EVENTS_PATH])
-        while True:
-            request = requests.get(request_url)
-            items = request.json()
-            entry = next(filter(ListApplicationContext.is_repository_creation_event, items), None)
-            if entry is None:
-                try:
-                    # Continue to traverse events until we find correct one
-                    request_url = request.links['next']['url']
-                    continue
-                except KeyError:
-                    return False
-            return entry['repo']
+    def get_time_range(minutes_diff=60) -> (str, str):
+        time_higher = datetime.datetime.now(datetime.timezone.utc)
+        time_lower = time_higher - datetime.timedelta(minutes=minutes_diff)
+        time_format = "%Y-%m-%dT%H:%M:%SZ"
+        return time_lower.strftime(time_format), time_higher.strftime(time_format)
 
     def get_query_str(self) -> str:
         query_build_str = []
-        if self.selected_language is not None:
-            query_build_str.append('q=language:%s' % self.selected_language)
 
+        time_lower, time_higher = ListApplicationContext.get_time_range()
+        language_query = "" if self.selected_language is None else ("+language:" + self.selected_language)
+        query_build_str.append('q=created:\"%s+..+%s\"%s' % (
+            time_lower, time_higher, language_query))
         query_build_str.append('per_page=%s' % self.entry_number)
         query_build_str.append('sort=%s' % self.sort_type)
         return '?' + '&'.join(query_build_str)
@@ -74,7 +55,7 @@ class ListApplicationContext(ApplicationContext):
             return self._context_data_sanatized
 
     def run(self):
-        latest_repo = self.get_latest_public_repository()
-        request_url = ''.join([ApplicationContext.ROOT_ENDPOINT, self.PATH, self.get_query_str()])
+        request_url = ''.join([ApplicationContext.ROOT_ENDPOINT, self.PATH_SEARCH, self.get_query_str()])
         request = requests.get(request_url)
+        a = request.links['next']['url']
         self._context_data = request.json()
