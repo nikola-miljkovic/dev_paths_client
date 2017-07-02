@@ -44,7 +44,7 @@ class ListApplicationContext(ApplicationContext):
             output_text_buffer.append("Total entries found: %s" % len(repositories))
             output_text_buffer.append("----------------------------------------")
             if self.extended_output:
-                output_text_buffer.append('\n'.join("#%s\t%s\t%s" %
+                output_text_buffer.append('\n'.join("#%s\t\t\t%s\t\t\t\t\t\t%s" %
                                           (idx, i['full_name'], transform_date(i['created_at']))
                                           for idx, i in enumerate(repositories)))
             else:
@@ -63,14 +63,23 @@ class ListApplicationContext(ApplicationContext):
 
         # Collection of items gathered throughout api calls and processed for output
         items = []
+        total_repo_count = 0
         if self.sort_type == 'default':
             while True:
                 # Gather items and sort them by creation date
                 # GitHub api doesn't support sort by creation date
                 request = requests.get(request_url)
                 content = request.json()
-                items.extend(content['items'])
-                total_repo_count = content['total_count']
+
+                try:
+                    items.extend(content['items'])
+                except KeyError: # This error repeats if API limit is exceeded
+                    print("Error, API limit is most likely exceeded, try again in a bit.")
+                    print("Here is message:")
+                    print(content['message'])
+                    exit(2)
+
+                total_repo_count += content['total_count']
 
                 if total_repo_count > self.entry_number:
                     # each request can only contain up to 100 entries
