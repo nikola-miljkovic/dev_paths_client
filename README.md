@@ -7,7 +7,7 @@ requests    2.10.0
 $ pip install -r requirements.txt
 ```
 
-### Usage
+## Usage
 
 Running ghtool:
 
