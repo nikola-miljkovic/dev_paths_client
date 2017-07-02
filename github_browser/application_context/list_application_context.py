@@ -45,8 +45,8 @@ class ListApplicationContext(ApplicationContext):
             output_text_buffer.append("----------------------------------------")
             if self.extended_output:
                 output_text_buffer.append('\n'.join("#%s\t\t\t%s\t\t\t\t\t\t%s" %
-                                          (idx, i['full_name'], transform_date(i['created_at']))
-                                          for idx, i in enumerate(repositories)))
+                                                    (idx, i['full_name'], transform_date(i['created_at']))
+                                                    for idx, i in enumerate(repositories)))
             else:
                 output_text_buffer.append('\n'.join(i['full_name'] for i in repositories))
 
@@ -57,7 +57,7 @@ class ListApplicationContext(ApplicationContext):
         return ''.join([ApplicationContext.ROOT_ENDPOINT, self.PATH_SEARCH, self.get_query_str(time_range)])
 
     def run(self):
-        time_diff = 30
+        time_diff = 10
         time_range = get_time_range(time_diff)
         request_url = self.create_query(time_range)
 
@@ -73,7 +73,7 @@ class ListApplicationContext(ApplicationContext):
 
                 try:
                     items.extend(content['items'])
-                except KeyError: # This error repeats if API limit is exceeded
+                except KeyError:  # This error repeats if API limit is exceeded
                     print("Error, API limit is most likely exceeded, try again in a bit.")
                     print("Here is message:")
                     print(content['message'])
@@ -95,10 +95,18 @@ class ListApplicationContext(ApplicationContext):
                     # Our search query contains less item then we need,
                     # Increase range for filtering and re-try
                     try:
-                        # Multiply search range by 2 starting from creation date of last entry in range
-                        time_diff *= 2
-                        last_date = min(items, key=sort_by_creation_date)['created_at']
-                        time_range = get_time_range(time_diff, time_higher=load_api_date(last_date))
+                        if len(items) == 0:
+                            # Multiply search range by 6 if there are no entries
+                            time_diff *= 6
+                            time_range = get_time_range(time_diff)
+                        else:
+                            # Multiply search range by 3 starting from creation date of last entry in range
+                            time_diff *= 3
+                            last_date = min(items, key=sort_by_creation_date)['created_at']
+                            # Reduced by 1 second to ensure no duplicates
+                            time_range = get_time_range(time_diff,
+                                                        time_higher=load_api_date(last_date) - timedelta(seconds=1))
+
                         request_url = self.create_query(time_range)
                         continue
                     except KeyError:
