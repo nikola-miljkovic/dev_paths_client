@@ -10,8 +10,13 @@ def mocked_requests_get(*args, **kwargs):
         def json(self):
             return self.json_data
 
-    if args[0] == 'https://api.github.com/search/repositories?q=language:assembly&per_page=1&sort=updated':
-        with open('data/test_data_get_sanatized_data.json') as data_test_file:
-            return MockResponse(json.load(data_test_file), 200)
+    endpoints = {
+        'https://api.github.com/search/repositories?q=language:assembly&per_page=1&sort=updated': 'data/test_data_get_sanatized_data.json',
+        'https://api.github.com/events': 'data/test_data_get_latest_repository.json'
+    }
 
-    return MockResponse(None, 404)
+    try:
+        with open(endpoints[args[0]]) as data_test_file:
+            return MockResponse(json.load(data_test_file), 200)
+    except KeyError:
+        return MockResponse(None, 404)

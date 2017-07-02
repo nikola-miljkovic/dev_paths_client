@@ -10,7 +10,6 @@ class ListApplicationContextTest(unittest.TestCase):
     #
     # get_query_str() tests
     #
-
     def test_get_query_str_with_all_parameters(self):
         list_application_context = ListApplicationContext(45, lang='ruby')
 
@@ -32,8 +31,8 @@ class ListApplicationContextTest(unittest.TestCase):
     #
     # get_sanitized_data()
     #
-
-    @mock.patch('github_browser.application_context.list_application_context.requests.get', side_effect=mocked_requests_get)
+    @mock.patch('github_browser.application_context.list_application_context.requests.get',
+                side_effect=mocked_requests_get)
     def test_get_sanitized_data_format(self, mock_get):
         expected_format = "Total entries found: 1\n" \
                           "----------------------------------------\n" \
@@ -45,6 +44,17 @@ class ListApplicationContextTest(unittest.TestCase):
         list_application_context.run()
 
         self.assertEqual(expected_format, list_application_context.get_sanitized_data())
+
+    #
+    # get_latest_public_repository()
+    #
+    @mock.patch('github_browser.application_context.list_application_context.requests.get',
+                side_effect=mocked_requests_get)
+    def test_get_latest_public_repository(self, mock_get):
+        list_application_context = ListApplicationContext(1, lang='assembly', sort='updated')
+        latest_repository = list_application_context.get_latest_public_repository()
+
+        self.assertEqual(latest_repository['id'], '6178645124')
 
 if __name__ == '__main__':
     unittest.main()

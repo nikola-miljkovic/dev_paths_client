@@ -75,7 +75,7 @@ class ListApplicationContext(ApplicationContext):
             return self._context_data_sanatized
 
     def run(self):
-        #latest_repo = self.get_latest_public_repository()
+        latest_repo = self.get_latest_public_repository()
         request_url = ''.join([ApplicationContext.ROOT_ENDPOINT, self.PATH, self.get_query_str()])
         request = requests.get(request_url)
         self._context_data = request.json()
