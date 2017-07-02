@@ -35,16 +35,17 @@ class ListApplicationContextTest(unittest.TestCase):
 
     @mock.patch('github_browser.application_context.list_application_context.requests.get', side_effect=mocked_requests_get)
     def test_get_sanatized_data_format(self, mock_get):
-        listApplicationContext = ListApplicationContext(1, lang='assembly', sort='updated')
+        expected_format = "Total entries found: 1\n" \
+                          "----------------------------------------\n" \
+                          "Repository Name: WelshSean/NAND2Tetris\n" \
+                          "Owner: WelshSean\n" \
+                          "Description: \"This repo contains my attempt at the Nand2Tetris course - http://nand2tetris.org/\"\n" \
+                          "Created at: 05.06.2017"
 
+        listApplicationContext = ListApplicationContext(1, lang='assembly', sort='updated')
         listApplicationContext.run()
-        self.assertEqual("Total entries found: 1\n"
-                         "----------------------------------------"
-                         "Repository Name: WelshSean/NAND2Tetris\n"
-                         "Owner: WelshSean\n"
-                         "Description: \"This repo contains my attempt at the Nand2Tetris course - http://nand2tetris.org/\"\n"
-                         "Created at: 06.05.2017"
-                         , listApplicationContext.get_sanatized_data())
+
+        self.assertEqual(expected_format, listApplicationContext.get_sanatized_data())
 
 if __name__ == '__main__':
     unittest.main()
