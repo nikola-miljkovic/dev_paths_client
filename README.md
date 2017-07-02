@@ -1,7 +1,7 @@
 ## Requirements
 
-Python      3.5
-requests    2.10.0
+Python      3.5  
+requests    2.10.0  
 
 ```sh
 $ pip install -r requirements.txt
