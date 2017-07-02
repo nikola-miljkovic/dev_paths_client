@@ -8,3 +8,5 @@ def main(args):
         print("No cmd specified")
     else:
         applicationContext.run()
+        for output in applicationContext.get_sanitized_data():
+            print(output)

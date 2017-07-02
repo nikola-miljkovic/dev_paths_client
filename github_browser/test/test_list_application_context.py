@@ -12,40 +12,39 @@ class ListApplicationContextTest(unittest.TestCase):
     #
 
     def test_get_query_str_with_all_parameters(self):
-        listApplicationContext = ListApplicationContext(45, lang='ruby')
+        list_application_context = ListApplicationContext(45, lang='ruby')
 
-        query = listApplicationContext.get_query_str()
+        query = list_application_context.get_query_str()
         self.assertEqual(query, '?q=language:ruby&per_page=45&sort=updated')
 
     def test_get_query_str_without_language(self):
-        listApplicationContext = ListApplicationContext(45)
+        list_application_context = ListApplicationContext(45)
 
-        query = listApplicationContext.get_query_str()
+        query = list_application_context.get_query_str()
         self.assertEqual(query, '?per_page=45&sort=updated')
 
     def test_get_query_str_with_stars_sort(self):
-        listApplicationContext = ListApplicationContext(45, sort='stars')
+        list_application_context = ListApplicationContext(45, sort='stars')
 
-        query = listApplicationContext.get_query_str()
+        query = list_application_context.get_query_str()
         self.assertEqual(query, '?per_page=45&sort=stars')
 
     #
-    # get_sanatized_data()
+    # get_sanitized_data()
     #
 
     @mock.patch('github_browser.application_context.list_application_context.requests.get', side_effect=mocked_requests_get)
-    def test_get_sanatized_data_format(self, mock_get):
+    def test_get_sanitized_data_format(self, mock_get):
         expected_format = "Total entries found: 1\n" \
                           "----------------------------------------\n" \
                           "Repository Name: WelshSean/NAND2Tetris\n" \
                           "Owner: WelshSean\n" \
-                          "Description: \"This repo contains my attempt at the Nand2Tetris course - http://nand2tetris.org/\"\n" \
-                          "Created at: 05.06.2017"
+                          "Description: \"This repo contains my attempt at the Nand2Tetris course - http://nand2tetris.org/\""
 
-        listApplicationContext = ListApplicationContext(1, lang='assembly', sort='updated')
-        listApplicationContext.run()
+        list_application_context = ListApplicationContext(1, lang='assembly', sort='updated')
+        list_application_context.run()
 
-        self.assertEqual(expected_format, listApplicationContext.get_sanatized_data())
+        self.assertEqual(expected_format, list_application_context.get_sanitized_data())
 
 if __name__ == '__main__':
     unittest.main()
