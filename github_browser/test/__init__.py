@@ -1,5 +1,7 @@
 import json
 
+def mocked_get_query_str(*args, **kwargs):
+    return '?q=created:"2017-07-02T18:16:28Z+..+2017-07-02T18:46:28Z"+language:assembly&per_page=100&sort=updated'
 
 def mocked_requests_get(*args, **kwargs):
     class MockResponse:
@@ -11,8 +13,7 @@ def mocked_requests_get(*args, **kwargs):
             return self.json_data
 
     endpoints = {
-        'https://api.github.com/search/repositories?q=created:"2017-07-02T16:16:02Z+..+2017-07-02T17:16:02Z"+language'
-        ':assembly&per_page=1&sort=updated': 'data/test_data_get_sanatized_data.json',
+        'https://api.github.com/search/repositories?q=created:"2017-07-02T18:16:28Z+..+2017-07-02T18:46:28Z"+language:assembly&per_page=100&sort=updated': 'data/test_data_get_sanitized_data.json',
         'https://api.github.com/events': 'data/test_data_get_latest_repository.json'
     }
 

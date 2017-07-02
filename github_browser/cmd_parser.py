@@ -18,6 +18,7 @@ def parse(args):
                              choices=['updated', 'stars', 'forks', 'default'],
                              help='Octopus API supported sorts or "default", custom sort by "created_at" field')
     parser_list.add_argument('-n', nargs=1, default=20, type=int, help='Maximum entries to display')
+    parser_list.add_argument('-t', action='store_true', help='Improves output format, shows #num and date')
 
     parser_desc = subparsers.add_parser('desc', help=HELP_DESC, description=HELP_DESC)
     parser_desc.set_defaults(which='desc')
@@ -42,6 +43,6 @@ def parse(args):
     elif parser.which is 'desc':
         return DescApplicationContext(parser.id)
     elif parser.which is 'list':
-        return ListApplicationContext(parser.n, lang=parser.lang, sort=parser.sort)
+        return ListApplicationContext(parser.n, lang=parser.lang, sort=parser.sort, extended_output=parser.t)
     elif parser.which is 'latest':
         return LatestApplicationContext()
