@@ -40,7 +40,7 @@ def parse(args):
     if not hasattr(parser, 'which'):
         return None
     elif parser.which is 'desc':
-        return DescApplicationContext(parser.ids)
+        return DescApplicationContext(parser.id)
     elif parser.which is 'list':
         return ListApplicationContext(parser.n, lang=parser.lang, sort=parser.sort)
     elif parser.which is 'latest':

@@ -9,7 +9,7 @@ class LatestApplicationContextTest(unittest.TestCase):
     #
     # get_latest_public_repository()
     #
-    @mock.patch('ghtool.application_context.list_application_context.requests.get',
+    @mock.patch('github_browser.application_context.list_application_context.requests.get',
                 side_effect=mocked_requests_get)
     def test_get_latest_public_repository(self, mock_get):
         list_application_context = LatestApplicationContext()

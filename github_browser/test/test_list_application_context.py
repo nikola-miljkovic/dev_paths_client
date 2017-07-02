@@ -14,37 +14,46 @@ class ListApplicationContextTest(unittest.TestCase):
         list_application_context = ListApplicationContext(45, lang='ruby')
 
         query = list_application_context.get_query_str()
-        self.assertEqual(query, '?q=language:ruby&per_page=45&sort=updated')
+        self.assertRegexpMatches(query, r'\?q=created\:.*language:ruby&per_page=45&sort=updated')
 
     def test_get_query_str_without_language(self):
         list_application_context = ListApplicationContext(45)
 
         query = list_application_context.get_query_str()
-        self.assertEqual(query, '?per_page=45&sort=updated')
+        self.assertRegexpMatches(query, r'\?q=created\:.*&per_page=45&sort=updated')
 
     def test_get_query_str_with_stars_sort(self):
         list_application_context = ListApplicationContext(45, sort='stars')
 
         query = list_application_context.get_query_str()
-        self.assertEqual(query, '?per_page=45&sort=stars')
+        self.assertRegexpMatches(query, r'\?q=created\:.*&per_page=45&sort=stars')
 
     #
     # get_sanitized_data()
     #
-    @mock.patch('ghtool.application_context.list_application_context.requests.get',
+    @mock.patch('github_browser.application_context.list_application_context.requests.get',
                 side_effect=mocked_requests_get)
     def test_get_sanitized_data_format(self, mock_get):
         expected_format = "Total entries found: 1\n" \
                           "----------------------------------------\n" \
-                          "Repository Name: WelshSean/NAND2Tetris\n" \
-                          "Owner: WelshSean\n" \
-                          "Description: \"This repo contains my attempt at the Nand2Tetris course - http://nand2tetris.org/\""
+                          "WelshSean/NAND2Tetris"
 
         list_application_context = ListApplicationContext(1, lang='assembly', sort='updated')
         list_application_context.run()
 
         self.assertEqual(expected_format, list_application_context.get_sanitized_data())
 
+    #
+    # sort_by_creation_date()
+    #
+    def test_sort_by_creation_date(self):
+        time_low, time_high = ListApplicationContext.get_time_range(60)
+        time_lowest, _ = ListApplicationContext.get_time_range(120)
+
+        entries = [{'created_at': time_low}, {'created_at': time_high}, {'created_at': time_lowest}]
+        new_entries = sorted(entries, key=ListApplicationContext.sort_by_creation_date, reverse=True)
+        self.assertListEqual(new_entries,
+                             [{'created_at': time_high}, {'created_at': time_low}, {'created_at': time_lowest}])
 
 if __name__ == '__main__':
     unittest.main()
